@@ -18,7 +18,7 @@ int main() {
     char queueStatus[256] = "";
     char arrivalTimeInput[10] = "";
     char burstTimeInput[10] = "";
-    
+    char PInfo[10] = "";
     // Textbox edit states
     bool arrivalTimeEdit = false;
     bool burstTimeEdit = false;
@@ -73,16 +73,20 @@ int main() {
         // Input from User
         GuiTextBox((Rectangle){ 130 * scaleX, 110 * scaleY, 100 * scaleX, 30 * scaleY }, arrivalTimeInput, sizeof(arrivalTimeInput), arrivalTimeEdit);
         GuiTextBox((Rectangle){ 130 * scaleX, 150 * scaleY, 100 * scaleX, 30 * scaleY }, burstTimeInput, sizeof(burstTimeInput), burstTimeEdit);
+        
+        // Process Informations
+        GuiTextBox((Rectangle){ 20 * scaleX, 190 * scaleY, 200 * scaleX, 60 * scaleY }, PInfo, sizeof(PInfo), false);
 
         GuiListView((Rectangle){ 20 * scaleX, 260 * scaleY, 200 * scaleX, 200 * scaleY }, 
                     "Process 1;Process 2;Process 3", &scrollIndex, &activeItem);
 
         GuiTextBox((Rectangle){ 250 * scaleX, 60 * scaleY, 500 * scaleX, 200 * scaleY }, logContent, sizeof(logContent), false);
-        GuiSlider((Rectangle){ 285 * scaleX, 270 * scaleY, 200 * scaleX, 20 * scaleY }, "Resize", NULL, &currentSize, 50, 200);
         GuiCheckBox((Rectangle){ 250 * scaleX, 300 * scaleY, 20 * scaleX, 20 * scaleY }, "Enable Random Context Switching", &contextSwitchingEnabled);
 
         GuiLabel((Rectangle){ 250 * scaleX, 330 * scaleY, 500 * scaleX, 20 * scaleY }, "Current Process: P1 (Running)");
         GuiTextBox((Rectangle){ 250 * scaleX, 360 * scaleY, 500 * scaleX, 100 * scaleY }, queueStatus, sizeof(queueStatus), false);
+        
+        if (GuiButton((Rectangle){ 250 * scaleX, 270 * scaleY, 200 * scaleX, 20 * scaleY }, "Start")){}
 
         if (GuiButton((Rectangle){ 650 * scaleX, 470 * scaleY, 100 * scaleX, 30 * scaleY }, "Export to .csv")) {}
 
@@ -92,7 +96,7 @@ int main() {
         if (showMessageBox)
             {
                 int result = GuiMessageBox((Rectangle){ 85 * scaleX, 70 * scaleY, 400 * scaleX, 200 * scaleY },
-                    "#191#CPU SCHEDULING SIMULATOR", "Devs: Pham Tuan Phong 20214039, Tran Quang Huy 20210428", "OK");
+                    "#196#CPU SCHEDULING SIMULATOR", "Devs: Pham Tuan Phong 20214039, Tran Quang Huy 20210428", "OK");
                 if (result >= 0) showMessageBox = false;
             }
         EndDrawing();
