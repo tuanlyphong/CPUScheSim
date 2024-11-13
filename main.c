@@ -79,15 +79,21 @@ int main() {
 
         GuiListView((Rectangle){ 20 * scaleX, 260 * scaleY, 200 * scaleX, 200 * scaleY }, 
                     "Process 1;Process 2;Process 3", &scrollIndex, &activeItem);
-
+        
+        // Display log
+        GuiLabel((Rectangle){ 250 * scaleX, 40 * scaleY, 500 * scaleX, 20 * scaleY }, "Changes: ");
         GuiTextBox((Rectangle){ 250 * scaleX, 60 * scaleY, 500 * scaleX, 200 * scaleY }, logContent, sizeof(logContent), false);
         GuiCheckBox((Rectangle){ 250 * scaleX, 300 * scaleY, 20 * scaleX, 20 * scaleY }, "Enable Random Context Switching", &contextSwitchingEnabled);
 
+        // Label for current process or CPU status
         GuiLabel((Rectangle){ 250 * scaleX, 330 * scaleY, 500 * scaleX, 20 * scaleY }, "Current Process: P1 (Running)");
+        
+        // Display Queue
         GuiTextBox((Rectangle){ 250 * scaleX, 360 * scaleY, 500 * scaleX, 100 * scaleY }, queueStatus, sizeof(queueStatus), false);
         
+        // Start Scheduling
         if (GuiButton((Rectangle){ 250 * scaleX, 270 * scaleY, 200 * scaleX, 20 * scaleY }, "Start")){}
-
+        
         if (GuiButton((Rectangle){ 650 * scaleX, 470 * scaleY, 100 * scaleX, 30 * scaleY }, "Export to .csv")) {}
 
         if (GuiButton((Rectangle){ 20 * scaleX, 530 * scaleY, 100 * scaleX, 30 * scaleY }, "Informations")) {
