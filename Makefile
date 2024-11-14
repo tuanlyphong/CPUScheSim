@@ -1,7 +1,8 @@
 # Compiler and Flags
 CC := gcc
 CCFLAGS := \
-    -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Wundef -Wcast-align=strict \
+    -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Wundef -Wpadded \
+	-Wdouble-promotion -Wformat=2 -Wno-unused-parameter -Wcast-align=strict \
     -Wpointer-arith -Wlogical-op -Wnull-dereference -Wfloat-equal \
     -fno-common -fstack-protector-strong -D_FORTIFY_SOURCE=2 \
     -O0 -g
