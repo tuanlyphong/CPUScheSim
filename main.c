@@ -3,9 +3,22 @@
 #define RAYGUI_IMPLEMENTATION
 #include "raygui.h"
 
+typedef struct {
+    int pid;
+    int requestTime;
+    int ioBurstTime;
+    int cpuBurstTime;
+} Process;
+
+#define MAX_PROCESSES 10
+Process processList[MAX_PROCESSES];
+int processCount = 0;
+
+
+
 int main() {
     int baseWidth = 800;
-    int baseHeight = 600;
+    int baseHeight = 630;
     InitWindow(baseWidth, baseHeight, "CPU Scheduler Simulator");
     bool showMessageBox = false;
     int selectedScheduler = 0;
@@ -16,13 +29,17 @@ int main() {
     float currentSize = 100;
     char logContent[256] = "";
     char queueStatus[256] = "";
-    char arrivalTimeInput[10] = "";
-    char burstTimeInput[10] = "";
-    char PInfo[10] = "";
+    int cpuTimeInput;
+    int ioTimeInput;
+    int requestTimeInput;
+    int cpuNumberInput;
+    char PInfo[128] = "";
+    char listViewContent[256] = "";
     // Textbox edit states
-    bool arrivalTimeEdit = false;
-    bool burstTimeEdit = false;
-
+    bool cpuTimeEdit = false;
+    bool ioTimeEdit = false;
+    bool requestTimeEdit = false;
+    bool cpuNumberEdit = false;
     // Define base text size for scaling
     int baseTextSize = 20;
 
@@ -49,54 +66,88 @@ int main() {
         
         if (GuiComboBox((Rectangle){ 20 * scaleX, 20 * scaleY, 210 * scaleX, 30 * scaleY }, 
                 "FCFS;RR;SJF;SRTF;Priority Scheduling", &selectedScheduler)) {}
+        
+        // Add process function
+        if (GuiButton((Rectangle){ 20 * scaleX, 60 * scaleY, 100 * scaleX, 30 * scaleY }, "Add Process")) {
+        
 
-        if (GuiButton((Rectangle){ 20 * scaleX, 60 * scaleY, 100 * scaleX, 30 * scaleY }, "Add Process")) {}
-        if (GuiButton((Rectangle){ 130 * scaleX, 60 * scaleY, 100 * scaleX, 30 * scaleY }, "Delete Process")) {}
 
-        GuiLabel((Rectangle){ 20 * scaleX, 110 * scaleY, 100 * scaleX, 20 * scaleY }, "Arrival Time:");
-        GuiLabel((Rectangle){ 20 * scaleX, 150 * scaleY, 100 * scaleX, 20 * scaleY }, "Burst Time:");
 
-        // Toggle edit mode for arrivalTimeInput textbox
+        }
+        
+        // Delete process function
+        if (GuiButton((Rectangle){ 130 * scaleX, 60 * scaleY, 100 * scaleX, 30 * scaleY }, "Delete Process")) {
+
+
+
+      
+        }
+
+               // Toggle edit mode for cpuTimeInput textbox
         if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){ 130 * scaleX, 110 * scaleY, 100 * scaleX, 30 * scaleY }) &&
             IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            arrivalTimeEdit = true;
-            burstTimeEdit = false;
+            cpuTimeEdit = true;
+            ioTimeEdit = false;
+            requestTimeEdit = false;
+            cpuNumberEdit = false;
         }
 
-        // Toggle edit mode for burstTimeInput textbox
+        // Toggle edit mode for ioTimeInput textbox
         if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){ 130 * scaleX, 150 * scaleY, 100 * scaleY, 30 * scaleY }) &&
             IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            burstTimeEdit = true;
-            arrivalTimeEdit = false;
+            ioTimeEdit = true;
+            cpuTimeEdit = false;
+            requestTimeEdit = false;
+            cpuNumberEdit = false;
         }
         
-        // Input from User
-        GuiTextBox((Rectangle){ 130 * scaleX, 110 * scaleY, 100 * scaleX, 30 * scaleY }, arrivalTimeInput, sizeof(arrivalTimeInput), arrivalTimeEdit);
-        GuiTextBox((Rectangle){ 130 * scaleX, 150 * scaleY, 100 * scaleX, 30 * scaleY }, burstTimeInput, sizeof(burstTimeInput), burstTimeEdit);
-        
-        // Process Informations
-        GuiTextBox((Rectangle){ 20 * scaleX, 190 * scaleY, 200 * scaleX, 60 * scaleY }, PInfo, sizeof(PInfo), false);
+        // toggle edit mode for requestTimeInput textbox
+        if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){ 130 * scaleX, 190 * scaleY, 100 * scaleY, 30 * scaleY }) &&
+            IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            ioTimeEdit = false;
+            cpuTimeEdit = false;
+            requestTimeEdit = true;
+            cpuNumberEdit = false;
+        }
 
-        GuiListView((Rectangle){ 20 * scaleX, 260 * scaleY, 200 * scaleX, 200 * scaleY }, 
+        if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){ 130 * scaleX, 230 * scaleY, 100 * scaleY, 30 * scaleY }) &&
+            IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            ioTimeEdit = false;
+            cpuTimeEdit = false;
+            requestTimeEdit = false;
+            cpuNumberEdit = true;
+        }    
+
+        // Input from User
+        GuiValueBox((Rectangle){ 130 * scaleX, 110 * scaleY, 100 * scaleX, 30 * scaleY }, "CPU time\t", &cpuTimeInput, 1, 300, cpuTimeEdit);
+        GuiValueBox((Rectangle){ 130 * scaleX, 150 * scaleY, 100 * scaleX, 30 * scaleY }, "IO time\t", &ioTimeInput, 1, 300, ioTimeEdit);
+        GuiValueBox((Rectangle){ 130 * scaleX, 190 * scaleY, 100 * scaleX, 30 * scaleY }, "Request time\t", &requestTimeInput, 1, 10, requestTimeEdit);
+        GuiValueBox((Rectangle){ 130 * scaleX, 230 * scaleY, 100 * scaleX, 30 * scaleY }, "CPU burst Num\t", &cpuNumberInput, 1, 10, cpuNumberEdit);
+
+        // Process Informations
+        GuiTextBox((Rectangle){ 20 * scaleX, 270 * scaleY, 200 * scaleX, 60 * scaleY }, PInfo, sizeof(PInfo), false);
+        
+        // Process list 
+        GuiListView((Rectangle){ 20 * scaleX, 340 * scaleY, 200 * scaleX, 200 * scaleY }, 
                     "Process 1;Process 2;Process 3", &scrollIndex, &activeItem);
         
         // Display log
-        GuiLabel((Rectangle){ 250 * scaleX, 40 * scaleY, 500 * scaleX, 20 * scaleY }, "Changes: ");
-        GuiTextBox((Rectangle){ 250 * scaleX, 60 * scaleY, 500 * scaleX, 200 * scaleY }, logContent, sizeof(logContent), false);
-        GuiCheckBox((Rectangle){ 250 * scaleX, 300 * scaleY, 20 * scaleX, 20 * scaleY }, "Enable Random Context Switching", &contextSwitchingEnabled);
+        GuiLabel((Rectangle){ 250 * scaleX, 70 * scaleY, 500 * scaleX, 20 * scaleY }, "Changes: ");
+        GuiTextBox((Rectangle){ 250 * scaleX, 90 * scaleY, 500 * scaleX, 200 * scaleY }, logContent, sizeof(logContent), false);
+        GuiCheckBox((Rectangle){ 250 * scaleX, 330 * scaleY, 20 * scaleX, 20 * scaleY }, "Enable Random Context Switching", &contextSwitchingEnabled);
 
         // Label for current process or CPU status
-        GuiLabel((Rectangle){ 250 * scaleX, 330 * scaleY, 500 * scaleX, 20 * scaleY }, "Current Process: P1 (Running)");
+        GuiLabel((Rectangle){ 250 * scaleX, 360 * scaleY, 500 * scaleX, 20 * scaleY }, "Current Process: P1 (Running)");
         
         // Display Queue
-        GuiTextBox((Rectangle){ 250 * scaleX, 360 * scaleY, 500 * scaleX, 100 * scaleY }, queueStatus, sizeof(queueStatus), false);
+        GuiTextBox((Rectangle){ 250 * scaleX, 390 * scaleY, 500 * scaleX, 100 * scaleY }, queueStatus, sizeof(queueStatus), false);
         
         // Start Scheduling
-        if (GuiButton((Rectangle){ 250 * scaleX, 270 * scaleY, 200 * scaleX, 20 * scaleY }, "Start")){}
+        if (GuiButton((Rectangle){ 250 * scaleX, 300 * scaleY, 200 * scaleX, 20 * scaleY }, "Start")){}
         
-        if (GuiButton((Rectangle){ 650 * scaleX, 470 * scaleY, 100 * scaleX, 30 * scaleY }, "Export to .csv")) {}
+        if (GuiButton((Rectangle){ 650 * scaleX, 500 * scaleY, 100 * scaleX, 30 * scaleY }, "Export to .csv")) {}
 
-        if (GuiButton((Rectangle){ 20 * scaleX, 530 * scaleY, 100 * scaleX, 30 * scaleY }, "Informations")) {
+        if (GuiButton((Rectangle){ 20 * scaleX, 560 * scaleY, 100 * scaleX, 30 * scaleY }, "Informations")) {
         showMessageBox = true;
         }
         if (showMessageBox)
