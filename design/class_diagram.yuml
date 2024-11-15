@@ -1,0 +1,36 @@
+// --- yUML VSCode Extension directive ---
+// {type:class}
+// {direction:leftToRight}
+// {generate:false}
+
+
+// --- yUML Description ---
+// This code can be visualized using yUML VSCode extension or
+// paste the code here: https://yuml.me/diagram/scruffy/class/draw
+
+// Class definition
+// Model
+[<<interface>>;scheduler_model_interface_t|+sched_algo: scheduler_algorithm_e;+proc_list: process_t*;simulate: void(*)(scheduler_model_interface_t* this)]
+[cpu_scheduler_model_t]
+[process_t|+pid: int;+priority: int;+request_time_ns: unsigned long long;+arrival_time_ns: unsigned long long;+pstate: process_state_e;+prog_trace: program_trace_t]
+[program_trace_t|+name: charArray(PROGRAM_NAME_MAX_SIZE);+num_of_record: int;+current_index: int;+record: program_trace_record_t*]
+[program_trace_record_t|+duration_ms: unsigned int;+prog_state: program_state_e]
+
+// View
+
+
+// Enumerate definition
+[<<enumeration>> scheduler_algorithm_e|SCHED_ALGO_ROUND_ROBIN]
+[<<enumeration>> process_state_e|PROC_STATE_NEW;PROC_STATE_READY;PROC_STATE_RUNNING;PROC_STATE_WAITING;PROC_STATE_TERMINATED]
+[<<enumeration>> program_state_e|PROG_STATE_CPU;PROG_STATE_IO]
+
+
+// Constant definition
+[CONSTANT|+PROGRAM_NAME_MAX_SIZE: int = 20]
+
+
+// Relationship
+[<<interface>>;scheduler_model_interface_t]^-.-[cpu_scheduler_model_t]
+[cpu_scheduler_model_t]<>proc_list-1:N>[process_t]
+[process_t]<>prog_trace-1:1>[program_trace_t]
+[program_trace_t]++record-1:N>[program_trace_record_t]
