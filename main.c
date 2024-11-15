@@ -29,10 +29,10 @@ int main() {
     float currentSize = 100;
     char logContent[256] = "";
     char queueStatus[256] = "";
-    int cpuTimeInput;
-    int ioTimeInput;
-    int requestTimeInput;
-    int cpuNumberInput;
+    int cpuTimeInput = 0;
+    int ioTimeInput = 0;
+    int requestTimeInput = 0;
+    int cpuNumberInput = 0;
     char PInfo[128] = "";
     char listViewContent[256] = "";
     // Textbox edit states
@@ -119,10 +119,10 @@ int main() {
         }    
 
         // Input from User
-        GuiValueBox((Rectangle){ 130 * scaleX, 110 * scaleY, 100 * scaleX, 30 * scaleY }, "CPU time\t", &cpuTimeInput, 1, 300, cpuTimeEdit);
-        GuiValueBox((Rectangle){ 130 * scaleX, 150 * scaleY, 100 * scaleX, 30 * scaleY }, "IO time\t", &ioTimeInput, 1, 300, ioTimeEdit);
-        GuiValueBox((Rectangle){ 130 * scaleX, 190 * scaleY, 100 * scaleX, 30 * scaleY }, "Request time\t", &requestTimeInput, 1, 10, requestTimeEdit);
-        GuiValueBox((Rectangle){ 130 * scaleX, 230 * scaleY, 100 * scaleX, 30 * scaleY }, "CPU burst Num\t", &cpuNumberInput, 1, 10, cpuNumberEdit);
+        GuiValueBox((Rectangle){ 130 * scaleX, 110 * scaleY, 100 * scaleX, 30 * scaleY }, "CPU time\t", &cpuTimeInput, 0, 300, cpuTimeEdit);
+        GuiValueBox((Rectangle){ 130 * scaleX, 150 * scaleY, 100 * scaleX, 30 * scaleY }, "IO time\t", &ioTimeInput, 0, 300, ioTimeEdit);
+        GuiValueBox((Rectangle){ 130 * scaleX, 190 * scaleY, 100 * scaleX, 30 * scaleY }, "Request time\t", &requestTimeInput, 0, 10, requestTimeEdit);
+        GuiValueBox((Rectangle){ 130 * scaleX, 230 * scaleY, 100 * scaleX, 30 * scaleY }, "CPU burst Num\t", &cpuNumberInput, 0, 10, cpuNumberEdit);
 
         // Process Informations
         GuiTextBox((Rectangle){ 20 * scaleX, 270 * scaleY, 200 * scaleX, 60 * scaleY }, PInfo, sizeof(PInfo), false);
