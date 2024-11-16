@@ -8,18 +8,14 @@ typedef struct {
     int requestTime;
     int ioBurstTime;
     int cpuBurstTime;
+    int cpuNumber;
 } Process;
 
 #define MAX_PROCESSES 10
 Process processList[MAX_PROCESSES];
-int processCount = 0;
-
-
-
-int main() {
+    int processCount = 0;
     int baseWidth = 800;
     int baseHeight = 630;
-    InitWindow(baseWidth, baseHeight, "CPU Scheduler Simulator");
     bool showMessageBox = false;
     int selectedScheduler = 0;
     bool contextSwitchingEnabled = false;
@@ -43,6 +39,33 @@ int main() {
     // Define base text size for scaling
     int baseTextSize = 20;
 
+void UpdateListViewContent() {
+    listViewContent[0] = '\0';  // Clear the content
+    for (int i = 0; i < processCount; i++) {
+        char processName[32];
+        snprintf(processName, sizeof(processName), "Process %d;", processList[i].pid);
+        strncat(listViewContent, processName, sizeof(listViewContent) - strlen(listViewContent) - 1);
+    }
+}
+
+void AddProcess(int pid, int requestTime, int ioBurstTime, int cpuBurstTime, int cpuNumber) {
+    if (processCount < MAX_PROCESSES) {
+        processList[processCount++] = (Process){ pid, requestTime, ioBurstTime, cpuBurstTime, cpuNumber };
+        UpdateListViewContent();
+    }
+}
+
+void UpdateProcessInfo(int index) {
+    if (index >= 0 && index < processCount) {
+        snprintf(PInfo, sizeof(PInfo), "PID: %d\nRequest Time: %d\nIO Burst Time: %d\nCPU Burst Time: %d\nCPU Burst Num: %d",
+                 processList[index].pid, processList[index].requestTime, 
+                 processList[index].ioBurstTime, processList[index].cpuBurstTime, processList[index].cpuNumber);
+    }
+}
+
+int main() {
+    int pidCounter = 1;
+    InitWindow(baseWidth, baseHeight, "CPU Scheduler Simulator");
     SetTargetFPS(60);
 
     while (!WindowShouldClose()) {
@@ -69,10 +92,7 @@ int main() {
         
         // Add process function
         if (GuiButton((Rectangle){ 20 * scaleX, 60 * scaleY, 100 * scaleX, 30 * scaleY }, "Add Process")) {
-        
-
-
-
+        AddProcess(pidCounter++, requestTimeInput, ioTimeInput, cpuTimeInput, cpuNumberInput);
         }
         
         // Delete process function
@@ -83,7 +103,7 @@ int main() {
       
         }
 
-               // Toggle edit mode for cpuTimeInput textbox
+        // Toggle edit mode for cpuTimeInput textbox
         if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){ 130 * scaleX, 110 * scaleY, 100 * scaleX, 30 * scaleY }) &&
             IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             cpuTimeEdit = true;
@@ -125,11 +145,10 @@ int main() {
         GuiValueBox((Rectangle){ 130 * scaleX, 230 * scaleY, 100 * scaleX, 30 * scaleY }, "CPU burst Num\t", &cpuNumberInput, 0, 10, cpuNumberEdit);
 
         // Process Informations
-        GuiTextBox((Rectangle){ 20 * scaleX, 270 * scaleY, 200 * scaleX, 60 * scaleY }, PInfo, sizeof(PInfo), false);
+        GuiTextBox((Rectangle){ 20 * scaleX, 280 * scaleY, 200 * scaleX, 90 * scaleY }, PInfo, sizeof(PInfo), false);
         
         // Process list 
-        GuiListView((Rectangle){ 20 * scaleX, 340 * scaleY, 200 * scaleX, 200 * scaleY }, 
-                    "Process 1;Process 2;Process 3", &scrollIndex, &activeItem);
+        GuiListView((Rectangle){ 20 * scaleX, 360 * scaleY, 200 * scaleX, 200 * scaleY }, listViewContent, &scrollIndex, &activeItem);        
         
         // Display log
         GuiLabel((Rectangle){ 250 * scaleX, 70 * scaleY, 500 * scaleX, 20 * scaleY }, "Changes: ");
@@ -147,15 +166,23 @@ int main() {
         
         if (GuiButton((Rectangle){ 650 * scaleX, 500 * scaleY, 100 * scaleX, 30 * scaleY }, "Export to .csv")) {}
 
-        if (GuiButton((Rectangle){ 20 * scaleX, 560 * scaleY, 100 * scaleX, 30 * scaleY }, "Informations")) {
+        if (GuiButton((Rectangle){ 20 * scaleX, 580 * scaleY, 100 * scaleX, 30 * scaleY }, "Informations")) {
         showMessageBox = true;
         }
+        
+        // Display MessageBox
         if (showMessageBox)
             {
                 int result = GuiMessageBox((Rectangle){ 85 * scaleX, 70 * scaleY, 400 * scaleX, 200 * scaleY },
                     "#196#CPU SCHEDULING SIMULATOR", "Devs: Pham Tuan Phong 20214039, Tran Quang Huy 20210428", "OK");
                 if (result >= 0) showMessageBox = false;
             }
+        
+        // Display Selected Process Informations
+        if (activeItem != -1) {
+            UpdateProcessInfo(activeItem);
+        }
+
         EndDrawing();
     }
 
