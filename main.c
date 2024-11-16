@@ -17,6 +17,7 @@ Process processList[MAX_PROCESSES];
     int baseWidth = 800;
     int baseHeight = 630;
     bool showMessageBox = false;
+    int messageType = 0;
     int selectedScheduler = 0;
     bool contextSwitchingEnabled = false;
     int activeItem = -1;
@@ -61,6 +62,9 @@ void UpdateProcessInfo(int index) {
                  processList[index].pid, processList[index].requestTime, 
                  processList[index].ioBurstTime, processList[index].cpuBurstTime, processList[index].cpuNumber);
     }
+    else {
+        PInfo[0] = '\0'; // Clear the info box if no valid process is selected
+    }
 }
 
 int main() {
@@ -97,10 +101,24 @@ int main() {
         
         // Delete process function
         if (GuiButton((Rectangle){ 130 * scaleX, 60 * scaleY, 100 * scaleX, 30 * scaleY }, "Delete Process")) {
-
-
-
-      
+            if (activeItem >= 0 && activeItem < processCount) {
+                for (int i = activeItem; i < processCount - 1; i++) {
+                processList[i] = processList[i + 1];
+                }
+                processCount--;
+                activeItem = -1;
+                PInfo[0] = '\0'; 
+                // Update listViewContent for GUI display
+                strcpy(listViewContent, "");
+                for (int i = 0; i < processCount; i++) {
+                char processInfo[32];
+                snprintf(processInfo, sizeof(processInfo), "Process %d;", processList[i].pid);
+                strcat(listViewContent, processInfo);
+                }
+            } else {
+                showMessageBox = true;
+                messageType = 2;
+            }
         }
 
         // Toggle edit mode for cpuTimeInput textbox
@@ -168,16 +186,22 @@ int main() {
 
         if (GuiButton((Rectangle){ 20 * scaleX, 580 * scaleY, 100 * scaleX, 30 * scaleY }, "Informations")) {
         showMessageBox = true;
+        messageType = 1;
         }
         
         // Display MessageBox
-        if (showMessageBox)
+        if (showMessageBox && messageType == 1)
             {
                 int result = GuiMessageBox((Rectangle){ 85 * scaleX, 70 * scaleY, 400 * scaleX, 200 * scaleY },
                     "#196#CPU SCHEDULING SIMULATOR", "Devs: Pham Tuan Phong 20214039, Tran Quang Huy 20210428", "OK");
-                if (result >= 0) showMessageBox = false;
+                if (result >= 0) {showMessageBox = false; messageType = 0;} 
             }
-        
+        if (showMessageBox && messageType == 2)
+            {
+                int result = GuiMessageBox((Rectangle){ 85 * scaleX, 70 * scaleY, 400 * scaleX, 200 * scaleY },
+                    "#196#CPU SCHEDULING SIMULATOR", "Please select a process to delete", "OK");
+                if (result >= 0) {showMessageBox = false; messageType = 0;}
+            }
         // Display Selected Process Informations
         if (activeItem != -1) {
             UpdateProcessInfo(activeItem);
