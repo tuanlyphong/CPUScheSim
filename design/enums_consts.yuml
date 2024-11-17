@@ -1,0 +1,18 @@
+// --- yUML VSCode Extension directive ---
+// {type:class}
+// {direction:leftToRight}
+// {generate:false}
+
+
+// --- yUML Description ---
+// This code can be visualized using yUML VSCode extension or
+// paste the code here: https://yuml.me/diagram/scruffy/class/draw
+
+// Enumerate definition
+[<<enumeration>> scheduler_algorithm_e|SCHED_ALGO_ROUND_ROBIN]
+[<<enumeration>> process_state_e|PROC_STATE_NEW;PROC_STATE_READY;PROC_STATE_RUNNING;PROC_STATE_WAITING;PROC_STATE_TERMINATED]
+[<<enumeration>> program_state_e|PROG_STATE_CPU;PROG_STATE_IO]
+
+
+// Constant definition
+[CONSTANT|+PROGRAM_NAME_MAX_SIZE: int = 20]
