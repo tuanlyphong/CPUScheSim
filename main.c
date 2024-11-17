@@ -3,6 +3,14 @@
 #include "raygui.h"
 #define MAX_PROCESSES 10
 
+typedef enum {
+    NEW,
+    READY,
+    RUNNING,
+    WAITING,
+    TERMINATED
+} ProcessState;
+
 typedef struct {
     int pid;
     int arrivalTime;
@@ -13,13 +21,7 @@ typedef struct {
 } Process;
 
 
-typedef enum {
-    NEW,
-    READY,
-    RUNNING,
-    WAITING,
-    TERMINATED
-} ProcessState;
+
 
     int pidCounter = 1;
     Process processList[MAX_PROCESSES];
