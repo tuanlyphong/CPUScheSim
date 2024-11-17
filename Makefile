@@ -12,6 +12,7 @@ RAYLIB_INC_DIR := raylib/include
 
 # Project Directories
 SRC_DIR := .
+INC_DIR := inc
 BUILD_DIR := build
 BIN_DIR := $(BUILD_DIR)/bin
 
@@ -34,11 +35,11 @@ all: $(TARGET)
 
 # Build Target
 $(TARGET): $(OBJ_FILES) | $(BIN_DIR)
-	$(CC) $(CCFLAGS) $(OBJ_FILES) -o $@ $(RAYLIB_FLAGS) -L$(RAYLIB_LIB_DIR)
+	$(CC) $(CCFLAGS) $(OBJ_FILES) -I$(INC_DIR) -o $@ $(RAYLIB_FLAGS) -L$(RAYLIB_LIB_DIR)
 
 # Compile Source Files to Object Files (Ensure BUILD_DIR exists before compiling)
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
-	$(CC) $(CCFLAGS) -isystem$(RAYLIB_INC_DIR) -c $< -o $@
+	$(CC) $(CCFLAGS) -I$(INC_DIR) -isystem$(RAYLIB_INC_DIR) -c $< -o $@
 
 # Create Build Directories
 $(BUILD_DIR) $(BIN_DIR):
