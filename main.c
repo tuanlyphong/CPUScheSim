@@ -5,11 +5,21 @@
 
 typedef struct {
     int pid;
-    int requestTime;
+    int arrivalTime;
     int ioBurstTime;
     int cpuBurstTime;
     int cpuNumber;
+    ProcessState state;
 } Process;
+
+
+typedef enum {
+    NEW,
+    READY,
+    RUNNING,
+    WAITING,
+    TERMINATED
+} ProcessState;
 
     int pidCounter = 1;
     Process processList[MAX_PROCESSES];
@@ -28,14 +38,14 @@ typedef struct {
     char queueStatus[256] = "";
     int cpuTimeInput = 0;
     int ioTimeInput = 0;
-    int requestTimeInput = 0;
+    int arrivalTimeInput = 0;
     int cpuNumberInput = 0;
     char PInfo[128] = "";
     char listViewContent[256] = "";
     // Textbox edit states
     bool cpuTimeEdit = false;
     bool ioTimeEdit = false;
-    bool requestTimeEdit = false;
+    bool arrivalTimeEdit = false;
     bool cpuNumberEdit = false;
     // Define base text size for scaling
     int baseTextSize = 20;
@@ -79,17 +89,17 @@ void UpdateListViewContent() {
     }
 }
 
-void AddProcess(int pid, int requestTime, int ioBurstTime, int cpuBurstTime, int cpuNumber) {
+void AddProcess(int pid, int arrivalTime, int ioBurstTime, int cpuBurstTime, int cpuNumber) {
     if (processCount < MAX_PROCESSES) {
-        processList[processCount++] = (Process){ pid, requestTime, ioBurstTime, cpuBurstTime, cpuNumber };
+        processList[processCount++] = (Process){ pid, arrivalTime, ioBurstTime, cpuBurstTime, cpuNumber };
         UpdateListViewContent();
     }
 }
 
 void UpdateProcessInfo(int index) {
     if (index >= 0 && index < processCount) {
-        snprintf(PInfo, sizeof(PInfo), "PID: %d\nRequest Time: %d\nIO Burst Time: %d\nCPU Burst Time: %d\nCPU Burst Num: %d",
-                 processList[index].pid, processList[index].requestTime, 
+        snprintf(PInfo, sizeof(PInfo), "PID: %d\nArrival Time: %d\nIO Burst Time: %d\nCPU Burst Time: %d\nCPU Burst Num: %d",
+                 processList[index].pid, processList[index].arrivalTime, 
                  processList[index].ioBurstTime, processList[index].cpuBurstTime, processList[index].cpuNumber);
     }
     else {
@@ -125,7 +135,7 @@ int main() {
         
         // Add process function
         if (GuiButton((Rectangle){ 20 * scaleX, 60 * scaleY, 100 * scaleX, 30 * scaleY }, "Add Process")) {
-        AddProcess(pidCounter++, requestTimeInput, ioTimeInput, cpuTimeInput, cpuNumberInput);
+        AddProcess(pidCounter++, arrivalTimeInput, ioTimeInput, cpuTimeInput, cpuNumberInput);
         }
         
         // Delete process function
@@ -155,7 +165,7 @@ int main() {
             IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             cpuTimeEdit = true;
             ioTimeEdit = false;
-            requestTimeEdit = false;
+            arrivalTimeEdit = false;
             cpuNumberEdit = false;
         }
 
@@ -164,16 +174,16 @@ int main() {
             IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             ioTimeEdit = true;
             cpuTimeEdit = false;
-            requestTimeEdit = false;
+            arrivalTimeEdit = false;
             cpuNumberEdit = false;
         }
         
-        // toggle edit mode for requestTimeInput textbox
+        // toggle edit mode for arrivalTimeInput textbox
         if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){ 130 * scaleX, 190 * scaleY, 100 * scaleY, 30 * scaleY }) &&
             IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             ioTimeEdit = false;
             cpuTimeEdit = false;
-            requestTimeEdit = true;
+            arrivalTimeEdit = true;
             cpuNumberEdit = false;
         }
 
@@ -181,14 +191,14 @@ int main() {
             IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             ioTimeEdit = false;
             cpuTimeEdit = false;
-            requestTimeEdit = false;
+            arrivalTimeEdit = false;
             cpuNumberEdit = true;
         }    
 
         // Input from User
         GuiValueBox((Rectangle){ 130 * scaleX, 110 * scaleY, 100 * scaleX, 30 * scaleY }, "CPU time\t", &cpuTimeInput, 0, 300, cpuTimeEdit);
         GuiValueBox((Rectangle){ 130 * scaleX, 150 * scaleY, 100 * scaleX, 30 * scaleY }, "IO time\t", &ioTimeInput, 0, 300, ioTimeEdit);
-        GuiValueBox((Rectangle){ 130 * scaleX, 190 * scaleY, 100 * scaleX, 30 * scaleY }, "Request time\t", &requestTimeInput, 0, 10, requestTimeEdit);
+        GuiValueBox((Rectangle){ 130 * scaleX, 190 * scaleY, 100 * scaleX, 30 * scaleY }, "Arrival time\t", &arrivalTimeInput, 0, 10, arrivalTimeEdit);
         GuiValueBox((Rectangle){ 130 * scaleX, 230 * scaleY, 100 * scaleX, 30 * scaleY }, "CPU burst Num\t", &cpuNumberInput, 0, 10, cpuNumberEdit);
 
         // Process Informations
