@@ -17,6 +17,7 @@ typedef struct {
     int ioBurstTime;
     int cpuBurstTime;
     int cpuNumber;
+    int originalCpuBurstTime;
     ProcessState state;
 } Process;
 
@@ -33,7 +34,7 @@ typedef struct {
     int activeItem = -1;
     int scrollIndex = 0;
     float currentSize = 100;
-    char logContent[256] = "";
+    char logContent[5000] = "";
     char queueStatus[256] = "";
     int cpuTimeInput = 0;
     int ioTimeInput = 0;
@@ -49,24 +50,61 @@ typedef struct {
     // Define base text size for scaling
     int baseTextSize = 20;
     bool schedulerStarted = false; // Tracks if the scheduler has started
+    int runningProcessIndex = -1;
+    bool processRunning = false;
 
 
-void JobQueue() {
-    for (int i = 0; i < processCount; i++) {
-        if (processList[i].arrivalTime == currentTime && processList[i].state == NEW) {
-            processList[i].state = READY;
+void FCFS_Scheduler() {
+    if (!processRunning) {
+        int earliestArrival = __INT_MAX__;
+        int nextProcessIndex = -1;
+
+        // Find the READY process with the earliest arrival time
+        for (int i = 0; i < processCount; i++) {
+            if (processList[i].state == READY && processList[i].arrivalTime <= currentTime) {
+                if (processList[i].arrivalTime < earliestArrival) {
+                    earliestArrival = processList[i].arrivalTime;
+                    nextProcessIndex = i;
+                }
+            }
+        }
+
+        if (nextProcessIndex != -1) {
+            runningProcessIndex = nextProcessIndex;
+            processList[runningProcessIndex].state = RUNNING;
+            processRunning = true;
+
             char logMessage[64];
-            snprintf(logMessage, sizeof(logMessage), "%d - P%d - entered the ready queue - Ready\n", currentTime, processList[i].pid);
-            strncat(logContent, logMessage, sizeof(logContent) - strlen(logContent) - 1); // Append log message
+            snprintf(logMessage, sizeof(logMessage), "%d - P%d - started running - RUNNING\n", currentTime, processList[runningProcessIndex].pid);
+            strncat(logContent, logMessage, sizeof(logContent) - strlen(logContent) - 1);
         }
     }
-    currentTime++;  // Increment simulation time after checking all processes
+}
+
+void TerminateProcessIfComplete() {
+    if (processRunning && runningProcessIndex != -1) {
+        // Decrement CPU burst time
+        processList[runningProcessIndex].cpuBurstTime--;
+
+        // Check if the process has completed
+        if (processList[runningProcessIndex].cpuBurstTime <= 0) {
+            processList[runningProcessIndex].state = TERMINATED;
+            processRunning = false;
+
+            // Log the termination with the correct current time
+            char logMessage[64];
+            snprintf(logMessage, sizeof(logMessage), "%d - P%d - terminated - TERMINATED\n", currentTime + 1, processList[runningProcessIndex].pid);
+            strncat(logContent, logMessage, sizeof(logContent) - strlen(logContent) - 1);
+
+            runningProcessIndex = -1;  // Reset the running process index
+        }
+    }
 }
 
 void StartScheduler(int algorithm) {
     switch (algorithm) {
         case 0:
-            // Implement FCFS scheduling logic here
+            FCFS_Scheduler();
             break;
         case 1:
             // Implement Round-Robin scheduling logic here
@@ -85,6 +123,23 @@ void StartScheduler(int algorithm) {
     }
 }
 
+void JobQueue() {
+    for (int i = 0; i < processCount; i++) {
+        if (processList[i].arrivalTime == currentTime && processList[i].state == NEW) {
+            processList[i].state = READY;
+            char logMessage[64];
+            snprintf(logMessage, sizeof(logMessage), "%d - P%d - entered the ready queue - READY\n", currentTime, processList[i].pid);
+            strncat(logContent, logMessage, sizeof(logContent) - strlen(logContent) - 1); // Append log message
+        }
+    }
+    
+    // Immediately check for the next process to run if CPU is free
+    if (!processRunning) {
+        StartScheduler(selectedScheduler);
+    }
+}
+
+
 void UpdateListViewContent() {
     listViewContent[0] = '\0';
     for (int i = 0; i < processCount; i++) {
@@ -94,22 +149,68 @@ void UpdateListViewContent() {
     }
 }
 
+void UpdateQueueStatus() {
+    queueStatus[0] = '\0'; // Clear the queue status
+
+    // Add Job Queue Information
+    strncat(queueStatus, "Job Queue: ", sizeof(queueStatus) - strlen(queueStatus) - 1);
+    for (int i = 0; i < processCount; i++) {
+        if (processList[i].state == NEW) {
+            char job[16];
+            snprintf(job, sizeof(job), "P%d ", processList[i].pid);
+            strncat(queueStatus, job, sizeof(queueStatus) - strlen(queueStatus) - 1);
+        }
+    }
+    strncat(queueStatus, "\n", sizeof(queueStatus) - strlen(queueStatus) - 1);
+
+    // Add Ready Queue Information
+    strncat(queueStatus, "Ready Queue: ", sizeof(queueStatus) - strlen(queueStatus) - 1);
+    for (int i = 0; i < processCount; i++) {
+        if (processList[i].state == READY) {
+            char ready[16];
+            snprintf(ready, sizeof(ready), "P%d ", processList[i].pid);
+            strncat(queueStatus, ready, sizeof(queueStatus) - strlen(queueStatus) - 1);
+        }
+    }
+}
+
 void AddProcess(int pid, int arrivalTime, int ioBurstTime, int cpuBurstTime, int cpuNumber) {
     if (processCount < MAX_PROCESSES) {
-        processList[processCount++] = (Process){ pid, arrivalTime, ioBurstTime, cpuBurstTime, cpuNumber };
+        processList[processCount++] = (Process){
+            pid, 
+            arrivalTime, 
+            ioBurstTime, 
+            cpuBurstTime, 
+            cpuBurstTime, // Set original burst time
+            cpuNumber, 
+            NEW
+        };
         UpdateListViewContent();
     }
 }
 
+
 void UpdateProcessInfo(int index) {
     if (index >= 0 && index < processCount) {
-        snprintf(PInfo, sizeof(PInfo), "PID: %d\nArrival Time: %d\nIO Burst Time: %d\nCPU Burst Time: %d\nCPU Burst Num: %d",
-                 processList[index].pid, processList[index].arrivalTime, 
-                 processList[index].ioBurstTime, processList[index].cpuBurstTime, processList[index].cpuNumber);
-    }
-    else {
+        snprintf(PInfo, sizeof(PInfo), 
+                 "PID: %d\nArrival Time: %d\nIO Burst Time: %d\nCPU Burst Time: %d\nCPU Burst Num: %d",
+                 processList[index].pid, 
+                 processList[index].arrivalTime, 
+                 processList[index].ioBurstTime, 
+                 processList[index].originalCpuBurstTime, // Use original burst time
+                 processList[index].cpuNumber);
+    } else {
         PInfo[0] = '\0'; // Clear the info box if no valid process is selected
     }
+}
+
+bool AllProcessesTerminated() {
+    for (int i = 0; i < processCount; i++) {
+        if (processList[i].state != TERMINATED) {
+            return false; // Found a process not terminated
+        }
+    }
+    return true; // All processes terminated
 }
 
 
@@ -214,7 +315,13 @@ int main() {
         GuiCheckBox((Rectangle){ 250 * scaleX, 330 * scaleY, 20 * scaleX, 20 * scaleY }, "Enable Random Context Switching", &contextSwitchingEnabled);
 
         // Label for current process or CPU status
-        GuiLabel((Rectangle){ 250 * scaleX, 360 * scaleY, 500 * scaleX, 20 * scaleY }, "Current Process: P1 (Running)");
+        if (processRunning && runningProcessIndex != -1) {
+        char cpuStatus[64];
+        snprintf(cpuStatus, sizeof(cpuStatus), "CPU status: P%d ", processList[runningProcessIndex].pid);
+        GuiLabel((Rectangle){ 250 * scaleX, 360 * scaleY, 500 * scaleX, 20 * scaleY }, cpuStatus);
+        } else {
+        GuiLabel((Rectangle){ 250 * scaleX, 360 * scaleY, 500 * scaleX, 20 * scaleY }, "CPU status: Idle");
+        }
         
         // Display Queue
         GuiTextBox((Rectangle){ 250 * scaleX, 390 * scaleY, 500 * scaleX, 100 * scaleY }, queueStatus, sizeof(queueStatus), false);
@@ -226,9 +333,17 @@ int main() {
         }
         
         if (schedulerStarted) {
-        // Place code here to update the scheduler status or display relevant information
-        StartScheduler(selectedScheduler);// Call the function with the selected algorithm
-        JobQueue();
+            JobQueue();
+            StartScheduler(selectedScheduler);
+            TerminateProcessIfComplete();
+            UpdateQueueStatus();
+            currentTime++;
+                if (AllProcessesTerminated()) {
+                schedulerStarted = false;
+                char logMessage[64];
+                snprintf(logMessage, sizeof(logMessage), "All processes completed at time %d\n", currentTime);
+                strncat(logContent, logMessage, sizeof(logContent) - strlen(logContent) - 1);
+            }
         }
         
         if (GuiButton((Rectangle){ 650 * scaleX, 500 * scaleY, 100 * scaleX, 30 * scaleY }, "Export to .csv")) {}
