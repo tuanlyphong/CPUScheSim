@@ -1,7 +1,7 @@
 #include "raylib.h"
-
 #define RAYGUI_IMPLEMENTATION
 #include "raygui.h"
+#define MAX_PROCESSES 10
 
 typedef struct {
     int pid;
@@ -11,8 +11,8 @@ typedef struct {
     int cpuNumber;
 } Process;
 
-#define MAX_PROCESSES 10
-Process processList[MAX_PROCESSES];
+    int pidCounter = 1;
+    Process processList[MAX_PROCESSES];
     int processCount = 0;
     int baseWidth = 800;
     int baseHeight = 630;
@@ -39,6 +39,36 @@ Process processList[MAX_PROCESSES];
     bool cpuNumberEdit = false;
     // Define base text size for scaling
     int baseTextSize = 20;
+    bool schedulerStarted = false; // Tracks if the scheduler has started
+
+
+void StartScheduler(int algorithm) {
+    switch (algorithm) {
+        case 0:
+            snprintf(logContent, sizeof(logContent), "Starting First-Come, First-Served (FCFS) Scheduling...\n");
+            // Implement FCFS scheduling logic here
+            break;
+        case 1:
+            snprintf(logContent, sizeof(logContent), "Starting Round-Robin (RR) Scheduling...\n");
+            // Implement Round-Robin scheduling logic here
+            break;
+        case 2:
+            snprintf(logContent, sizeof(logContent), "Starting Shortest Job First (SJF) Scheduling...\n");
+            // Implement SJF scheduling logic here
+            break;
+        case 3:
+            snprintf(logContent, sizeof(logContent), "Starting Shortest Remaining Time First (SRTF) Scheduling...\n");
+            // Implement SRTF scheduling logic here
+            break;
+        case 4:
+            snprintf(logContent, sizeof(logContent), "Starting Priority Scheduling...\n");
+            // Implement Priority scheduling logic here
+            break;
+        default:
+            snprintf(logContent, sizeof(logContent), "Invalid selection.\n");
+            break;
+    }
+}
 
 void UpdateListViewContent() {
     listViewContent[0] = '\0';  // Clear the content
@@ -68,7 +98,6 @@ void UpdateProcessInfo(int index) {
 }
 
 int main() {
-    int pidCounter = 1;
     InitWindow(baseWidth, baseHeight, "CPU Scheduler Simulator");
     SetTargetFPS(60);
 
@@ -180,7 +209,14 @@ int main() {
         GuiTextBox((Rectangle){ 250 * scaleX, 390 * scaleY, 500 * scaleX, 100 * scaleY }, queueStatus, sizeof(queueStatus), false);
         
         // Start Scheduling
-        if (GuiButton((Rectangle){ 250 * scaleX, 300 * scaleY, 200 * scaleX, 20 * scaleY }, "Start")){}
+        if (GuiButton((Rectangle){ 250 * scaleX, 300 * scaleY, 200 * scaleX, 20 * scaleY }, "Start")){
+        schedulerStarted = true;
+        StartScheduler(selectedScheduler); // Call the function with the selected algorithm
+        }
+        
+        if (schedulerStarted) {
+            // Place code here to update the scheduler status or display relevant information
+        }
         
         if (GuiButton((Rectangle){ 650 * scaleX, 500 * scaleY, 100 * scaleX, 30 * scaleY }, "Export to .csv")) {}
 
