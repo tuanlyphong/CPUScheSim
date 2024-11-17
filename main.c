@@ -20,9 +20,7 @@ typedef struct {
     ProcessState state;
 } Process;
 
-
-
-
+    int currentTime = 0;
     int pidCounter = 1;
     Process processList[MAX_PROCESSES];
     int processCount = 0;
@@ -34,7 +32,6 @@ typedef struct {
     bool contextSwitchingEnabled = false;
     int activeItem = -1;
     int scrollIndex = 0;
-    float progressValue = 0.0f;
     float currentSize = 100;
     char logContent[256] = "";
     char queueStatus[256] = "";
@@ -54,36 +51,42 @@ typedef struct {
     bool schedulerStarted = false; // Tracks if the scheduler has started
 
 
+void JobQueue() {
+    for (int i = 0; i < processCount; i++) {
+        if (processList[i].arrivalTime == currentTime && processList[i].state == NEW) {
+            processList[i].state = READY;
+            char logMessage[64];
+            snprintf(logMessage, sizeof(logMessage), "%d - P%d - entered the ready queue - Ready\n", currentTime, processList[i].pid);
+            strncat(logContent, logMessage, sizeof(logContent) - strlen(logContent) - 1); // Append log message
+        }
+    }
+    currentTime++;  // Increment simulation time after checking all processes
+}
+
 void StartScheduler(int algorithm) {
     switch (algorithm) {
         case 0:
-            snprintf(logContent, sizeof(logContent), "Starting First-Come, First-Served (FCFS) Scheduling...\n");
             // Implement FCFS scheduling logic here
             break;
         case 1:
-            snprintf(logContent, sizeof(logContent), "Starting Round-Robin (RR) Scheduling...\n");
             // Implement Round-Robin scheduling logic here
             break;
         case 2:
-            snprintf(logContent, sizeof(logContent), "Starting Shortest Job First (SJF) Scheduling...\n");
             // Implement SJF scheduling logic here
             break;
         case 3:
-            snprintf(logContent, sizeof(logContent), "Starting Shortest Remaining Time First (SRTF) Scheduling...\n");
             // Implement SRTF scheduling logic here
             break;
         case 4:
-            snprintf(logContent, sizeof(logContent), "Starting Priority Scheduling...\n");
             // Implement Priority scheduling logic here
             break;
         default:
-            snprintf(logContent, sizeof(logContent), "Invalid selection.\n");
             break;
     }
 }
 
 void UpdateListViewContent() {
-    listViewContent[0] = '\0';  // Clear the content
+    listViewContent[0] = '\0';
     for (int i = 0; i < processCount; i++) {
         char processName[32];
         snprintf(processName, sizeof(processName), "Process %d;", processList[i].pid);
@@ -109,6 +112,8 @@ void UpdateProcessInfo(int index) {
     }
 }
 
+
+
 int main() {
     InitWindow(baseWidth, baseHeight, "CPU Scheduler Simulator");
     SetTargetFPS(60);
@@ -124,7 +129,7 @@ int main() {
 
         BeginDrawing();
         ClearBackground(RAYWHITE);
-
+         
         // Set the text size for the title label
         GuiSetStyle(DEFAULT, TEXT_SIZE, scaledTextSize + 10);  // Add a bit more for the title
         GuiLabel((Rectangle){ 250 * scaleX, 20 * scaleY, 500 * scaleX, 30 * scaleY }, "CPU SCHEDULING SIMULATOR");
@@ -144,18 +149,12 @@ int main() {
         if (GuiButton((Rectangle){ 130 * scaleX, 60 * scaleY, 100 * scaleX, 30 * scaleY }, "Delete Process")) {
             if (activeItem >= 0 && activeItem < processCount) {
                 for (int i = activeItem; i < processCount - 1; i++) {
-                processList[i] = processList[i + 1];
+                    processList[i] = processList[i + 1];
                 }
                 processCount--;
                 activeItem = -1;
-                PInfo[0] = '\0'; 
-                // Update listViewContent for GUI display
-                strcpy(listViewContent, "");
-                for (int i = 0; i < processCount; i++) {
-                char processInfo[32];
-                snprintf(processInfo, sizeof(processInfo), "Process %d;", processList[i].pid);
-                strcat(listViewContent, processInfo);
-                }
+                UpdateListViewContent();
+                PInfo[0] = '\0';
             } else {
                 showMessageBox = true;
                 messageType = 2;
@@ -200,7 +199,7 @@ int main() {
         // Input from User
         GuiValueBox((Rectangle){ 130 * scaleX, 110 * scaleY, 100 * scaleX, 30 * scaleY }, "CPU time\t", &cpuTimeInput, 0, 300, cpuTimeEdit);
         GuiValueBox((Rectangle){ 130 * scaleX, 150 * scaleY, 100 * scaleX, 30 * scaleY }, "IO time\t", &ioTimeInput, 0, 300, ioTimeEdit);
-        GuiValueBox((Rectangle){ 130 * scaleX, 190 * scaleY, 100 * scaleX, 30 * scaleY }, "Arrival time\t", &arrivalTimeInput, 0, 10, arrivalTimeEdit);
+        GuiValueBox((Rectangle){ 130 * scaleX, 190 * scaleY, 100 * scaleX, 30 * scaleY }, "Arrival time\t", &arrivalTimeInput, 0, 300, arrivalTimeEdit);
         GuiValueBox((Rectangle){ 130 * scaleX, 230 * scaleY, 100 * scaleX, 30 * scaleY }, "CPU burst Num\t", &cpuNumberInput, 0, 10, cpuNumberEdit);
 
         // Process Informations
@@ -222,12 +221,14 @@ int main() {
         
         // Start Scheduling
         if (GuiButton((Rectangle){ 250 * scaleX, 300 * scaleY, 200 * scaleX, 20 * scaleY }, "Start")){
+        strncat(logContent, "Timestamp - Pid - Changes - State\n", sizeof(logContent) - strlen(logContent) - 1);
         schedulerStarted = true;
-        StartScheduler(selectedScheduler); // Call the function with the selected algorithm
         }
         
         if (schedulerStarted) {
-            // Place code here to update the scheduler status or display relevant information
+        // Place code here to update the scheduler status or display relevant information
+        StartScheduler(selectedScheduler);// Call the function with the selected algorithm
+        JobQueue();
         }
         
         if (GuiButton((Rectangle){ 650 * scaleX, 500 * scaleY, 100 * scaleX, 30 * scaleY }, "Export to .csv")) {}
