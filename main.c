@@ -316,15 +316,10 @@ int main() {
         GuiCheckBox((Rectangle){ 250 * scaleX, 400 * scaleY, 20 * scaleX, 20 * scaleY }, "Enable Random Context Switching", &contextSwitchingEnabled);
         
         // Progress Bar
-        GuiProgressBar((Rectangle){615 * scaleX, 90 * scaleY, 100 * scaleX, 30 * scaleY},NULL,"Process 1",&progress,0.0f,1.0f);
-        GuiProgressBar((Rectangle){615 * scaleX, 123 * scaleY, 100 * scaleX, 30 * scaleY},NULL,"Process 2",&progress,0.0f,1.0f);
-        GuiProgressBar((Rectangle){615 * scaleX, 156 * scaleY, 100 * scaleX, 30 * scaleY},NULL,"Process 3",&progress,0.0f,1.0f);
-        GuiProgressBar((Rectangle){615 * scaleX, 189 * scaleY, 100 * scaleX, 30 * scaleY},NULL,"Process 4",&progress,0.0f,1.0f);
-        GuiProgressBar((Rectangle){615 * scaleX, 222 * scaleY, 100 * scaleX, 30 * scaleY},NULL,"Process 5",&progress,0.0f,1.0f);
-        GuiProgressBar((Rectangle){615 * scaleX, 255 * scaleY, 100 * scaleX, 30 * scaleY},NULL,"Process 6",&progress,0.0f,1.0f);
-        GuiProgressBar((Rectangle){615 * scaleX, 288 * scaleY, 100 * scaleX, 30 * scaleY},NULL,"Process 7",&progress,0.0f,1.0f);
-        GuiProgressBar((Rectangle){615 * scaleX, 321 * scaleY, 100 * scaleX, 30 * scaleY},NULL,"Process 8",&progress,0.0f,1.0f);
-
+        for (int i = 0; i < processCount; i++) {
+            float progress = 1.0f - (float)processList[i].cpuBurstTime / processList[i].originalCpuBurstTime;
+            GuiProgressBar((Rectangle){615 * scaleX, (90 + 33 * i) * scaleY, 100 * scaleX, 30 * scaleY}, NULL, NULL, &progress, 0.0f, 1.0f);
+        }
         // Label for current process or CPU status
         if (processRunning && runningProcessIndex != -1) {
         char cpuStatus[64];
