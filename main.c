@@ -18,6 +18,9 @@ typedef struct {
     int cpuBurstTime;
     int originalCpuBurstTime;
     int cpuNumber;
+    int completionTime;
+    int waitingTime;
+    int turnaroundTime;
     ProcessState state;
 } Process;
 
@@ -37,6 +40,7 @@ typedef struct {
     float currentSize = 100;
     char logContent[5000] = "";
     char queueStatus[256] = "";
+    char Performance[256] = "";
     int cpuTimeInput = 0;
     int ioTimeInput = 0;
     int arrivalTimeInput = 0;
@@ -54,6 +58,36 @@ typedef struct {
     int runningProcessIndex = -1;
     bool processRunning = false;
 
+void calculateMetrics(Process processList[], int processCount, int totalSimulationTime) {
+    int totalCpuTimeUsed = 0;
+    int totalWaitingTime = 0;
+    int totalTurnaroundTime = 0;
+
+    for (int i = 0; i < processCount; i++) {
+        // Calculate individual process waiting and turnaround times
+        processList[i].waitingTime = processList[i].completionTime - processList[i].arrivalTime - processList[i].originalCpuBurstTime;
+        processList[i].turnaroundTime = processList[i].completionTime - processList[i].arrivalTime;
+
+        // Sum up CPU time, waiting time, and turnaround time
+        totalCpuTimeUsed += processList[i].originalCpuBurstTime;
+        totalWaitingTime += processList[i].waitingTime;
+        totalTurnaroundTime += processList[i].turnaroundTime;
+    }
+
+    // Calculate CPU Utilization, Throughput, Average Waiting Time, and Average Turnaround Time
+    float cpuUtilization = ((float)totalCpuTimeUsed / totalSimulationTime) * 100.0f;
+    float throughput = (float)processCount / totalSimulationTime;
+    float averageWaitingTime = (float)totalWaitingTime / processCount;
+    float averageTurnaroundTime = (float)totalTurnaroundTime / processCount;
+
+    // Display the calculated metrics
+     sprintf(Performance,
+            "CPU Utilization: %.2f%%\n"
+            "Throughput: %.2f processes/unit time\n"
+            "Average Waiting Time: %.2f units\n"
+            "Average Turnaround Time: %.2f units",
+            cpuUtilization, throughput, averageWaitingTime, averageTurnaroundTime);
+}
 
 void FCFS_Scheduler() {
     if (!processRunning) {
@@ -91,7 +125,7 @@ void TerminateProcessIfComplete() {
         if (processList[runningProcessIndex].cpuBurstTime <= 0) {
             processList[runningProcessIndex].state = TERMINATED;
             processRunning = false;
-
+            processList[runningProcessIndex].completionTime = currentTime + 1;
             // Log the termination with the correct current time
             char logMessage[64];
             snprintf(logMessage, sizeof(logMessage), "%d - P%d - terminated - TERMINATED\n", currentTime + 1, processList[runningProcessIndex].pid);
@@ -211,7 +245,9 @@ bool AllProcessesTerminated() {
             return false; // Found a process not terminated
         }
     }
-    return true; // All processes terminated
+    int totalSimulationTime = currentTime;
+    calculateMetrics(processList, processCount, totalSimulationTime);
+    return true;// All processes terminated
 }
 
 
@@ -319,6 +355,9 @@ int main() {
         for (int i = 0; i < processCount; i++) {
             float progress = 1.0f - (float)processList[i].cpuBurstTime / processList[i].originalCpuBurstTime;
             GuiProgressBar((Rectangle){615 * scaleX, (90 + 33 * i) * scaleY, 100 * scaleX, 30 * scaleY}, NULL, NULL, &progress, 0.0f, 1.0f);
+            char label[20];
+            sprintf(label, "P%d", i);  // Label with process index
+            DrawText(label, 730 * scaleX, (95 + 33 * i) * scaleY, 20 * scaleX, DARKGRAY);
         }
         // Label for current process or CPU status
         if (processRunning && runningProcessIndex != -1) {
@@ -333,8 +372,8 @@ int main() {
         GuiTextBox((Rectangle){ 250 * scaleX, 450 * scaleY, 260 * scaleX, 110 * scaleY }, queueStatus, sizeof(queueStatus), false);
         
         // Display caculated result
-        GuiTextBox((Rectangle){ 520 * scaleX, 450 * scaleY, 260 * scaleX, 110 * scaleY }, queueStatus, sizeof(queueStatus), false);
-        GuiLabel((Rectangle){ 520 * scaleX, 430 * scaleY, 260 * scaleX, 20 * scaleY }, "Result");
+        GuiTextBox((Rectangle){ 520 * scaleX, 450 * scaleY, 260 * scaleX, 110 * scaleY }, Performance, sizeof(Performance), false);
+        GuiLabel((Rectangle){ 520 * scaleX, 430 * scaleY, 260 * scaleX, 20 * scaleY }, "Performance");
                 
         // Start Scheduling
         if (GuiButton((Rectangle){ 250 * scaleX, 370 * scaleY, 200 * scaleX, 20 * scaleY }, "Start")){
