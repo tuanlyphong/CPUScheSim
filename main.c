@@ -16,8 +16,8 @@ typedef struct {
     int arrivalTime;
     int ioBurstTime;
     int cpuBurstTime;
-    int cpuNumber;
     int originalCpuBurstTime;
+    int cpuNumber;
     ProcessState state;
 } Process;
 
@@ -174,14 +174,14 @@ void UpdateQueueStatus() {
     }
 }
 
-void AddProcess(int pid, int arrivalTime, int ioBurstTime, int cpuBurstTime, int cpuNumber) {
+void AddProcess(int pid, int arrivalTime, int ioBurstTime, int cpuBurstTime, int originalCpuBurstTime, int cpuNumber) {
     if (processCount < MAX_PROCESSES) {
         processList[processCount++] = (Process){
             pid, 
             arrivalTime, 
             ioBurstTime, 
             cpuBurstTime, 
-            cpuBurstTime, // Set original burst time
+            originalCpuBurstTime, // Set original burst time
             cpuNumber, 
             NEW
         };
@@ -243,7 +243,7 @@ int main() {
         
         // Add process function
         if (GuiButton((Rectangle){ 20 * scaleX, 60 * scaleY, 100 * scaleX, 30 * scaleY }, "Add Process")) {
-        AddProcess(pidCounter++, arrivalTimeInput, ioTimeInput, cpuTimeInput, cpuNumberInput);
+        AddProcess(pidCounter++, arrivalTimeInput, ioTimeInput, cpuTimeInput, cpuTimeInput, cpuNumberInput);
         }
         
         // Delete process function
@@ -328,6 +328,7 @@ int main() {
         
         // Start Scheduling
         if (GuiButton((Rectangle){ 250 * scaleX, 300 * scaleY, 200 * scaleX, 20 * scaleY }, "Start")){
+        snprintf(logContent, sizeof(logContent), "Start!\n");
         strncat(logContent, "Timestamp - Pid - Changes - State\n", sizeof(logContent) - strlen(logContent) - 1);
         schedulerStarted = true;
         }
@@ -343,6 +344,11 @@ int main() {
                 char logMessage[64];
                 snprintf(logMessage, sizeof(logMessage), "All processes completed at time %d\n", currentTime);
                 strncat(logContent, logMessage, sizeof(logContent) - strlen(logContent) - 1);
+                for (int i = 0; i < processCount; i++){
+                processList[i].state = NEW;
+                processList[i].cpuBurstTime = processList[i].originalCpuBurstTime;
+                currentTime = 0;
+                }
             }
         }
         
