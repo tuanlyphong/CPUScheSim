@@ -21,6 +21,7 @@ typedef struct {
     ProcessState state;
 } Process;
 
+    float progress = 0.0f;
     int currentTime = 0;
     int pidCounter = 1;
     Process processList[MAX_PROCESSES];
@@ -311,23 +312,37 @@ int main() {
         
         // Display log
         GuiLabel((Rectangle){ 250 * scaleX, 70 * scaleY, 500 * scaleX, 20 * scaleY }, "Changes: ");
-        GuiTextBox((Rectangle){ 250 * scaleX, 90 * scaleY, 500 * scaleX, 200 * scaleY }, logContent, sizeof(logContent), false);
-        GuiCheckBox((Rectangle){ 250 * scaleX, 330 * scaleY, 20 * scaleX, 20 * scaleY }, "Enable Random Context Switching", &contextSwitchingEnabled);
+        GuiTextBox((Rectangle){ 250 * scaleX, 90 * scaleY, 355 * scaleX, 270 * scaleY }, logContent, sizeof(logContent), false);
+        GuiCheckBox((Rectangle){ 250 * scaleX, 400 * scaleY, 20 * scaleX, 20 * scaleY }, "Enable Random Context Switching", &contextSwitchingEnabled);
+        
+        // Progress Bar
+        GuiProgressBar((Rectangle){615 * scaleX, 90 * scaleY, 100 * scaleX, 30 * scaleY},NULL,"Process 1",&progress,0.0f,1.0f);
+        GuiProgressBar((Rectangle){615 * scaleX, 123 * scaleY, 100 * scaleX, 30 * scaleY},NULL,"Process 2",&progress,0.0f,1.0f);
+        GuiProgressBar((Rectangle){615 * scaleX, 156 * scaleY, 100 * scaleX, 30 * scaleY},NULL,"Process 3",&progress,0.0f,1.0f);
+        GuiProgressBar((Rectangle){615 * scaleX, 189 * scaleY, 100 * scaleX, 30 * scaleY},NULL,"Process 4",&progress,0.0f,1.0f);
+        GuiProgressBar((Rectangle){615 * scaleX, 222 * scaleY, 100 * scaleX, 30 * scaleY},NULL,"Process 5",&progress,0.0f,1.0f);
+        GuiProgressBar((Rectangle){615 * scaleX, 255 * scaleY, 100 * scaleX, 30 * scaleY},NULL,"Process 6",&progress,0.0f,1.0f);
+        GuiProgressBar((Rectangle){615 * scaleX, 288 * scaleY, 100 * scaleX, 30 * scaleY},NULL,"Process 7",&progress,0.0f,1.0f);
+        GuiProgressBar((Rectangle){615 * scaleX, 321 * scaleY, 100 * scaleX, 30 * scaleY},NULL,"Process 8",&progress,0.0f,1.0f);
 
         // Label for current process or CPU status
         if (processRunning && runningProcessIndex != -1) {
         char cpuStatus[64];
         snprintf(cpuStatus, sizeof(cpuStatus), "CPU status: P%d ", processList[runningProcessIndex].pid);
-        GuiLabel((Rectangle){ 250 * scaleX, 360 * scaleY, 500 * scaleX, 20 * scaleY }, cpuStatus);
+        GuiLabel((Rectangle){ 250 * scaleX, 430 * scaleY, 260 * scaleX, 20 * scaleY }, cpuStatus);
         } else {
-        GuiLabel((Rectangle){ 250 * scaleX, 360 * scaleY, 500 * scaleX, 20 * scaleY }, "CPU status: Idle");
+        GuiLabel((Rectangle){ 250 * scaleX, 430 * scaleY, 260 * scaleX, 20 * scaleY }, "CPU status: Idle");
         }
         
         // Display Queue
-        GuiTextBox((Rectangle){ 250 * scaleX, 390 * scaleY, 500 * scaleX, 100 * scaleY }, queueStatus, sizeof(queueStatus), false);
+        GuiTextBox((Rectangle){ 250 * scaleX, 450 * scaleY, 260 * scaleX, 110 * scaleY }, queueStatus, sizeof(queueStatus), false);
         
+        // Display caculated result
+        GuiTextBox((Rectangle){ 520 * scaleX, 450 * scaleY, 260 * scaleX, 110 * scaleY }, queueStatus, sizeof(queueStatus), false);
+        GuiLabel((Rectangle){ 520 * scaleX, 430 * scaleY, 260 * scaleX, 20 * scaleY }, "Result");
+                
         // Start Scheduling
-        if (GuiButton((Rectangle){ 250 * scaleX, 300 * scaleY, 200 * scaleX, 20 * scaleY }, "Start")){
+        if (GuiButton((Rectangle){ 250 * scaleX, 370 * scaleY, 200 * scaleX, 20 * scaleY }, "Start")){
         snprintf(logContent, sizeof(logContent), "Start!\n");
         strncat(logContent, "Timestamp - Pid - Changes - State\n", sizeof(logContent) - strlen(logContent) - 1);
         schedulerStarted = true;
@@ -352,7 +367,7 @@ int main() {
             }
         }
         
-        if (GuiButton((Rectangle){ 650 * scaleX, 500 * scaleY, 100 * scaleX, 30 * scaleY }, "Export to .csv")) {}
+        if (GuiButton((Rectangle){ 650 * scaleX, 570 * scaleY, 100 * scaleX, 30 * scaleY }, "Export to .csv")) {}
 
         if (GuiButton((Rectangle){ 20 * scaleX, 580 * scaleY, 100 * scaleX, 30 * scaleY }, "Informations")) {
         showMessageBox = true;
