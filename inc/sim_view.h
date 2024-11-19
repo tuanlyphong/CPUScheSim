@@ -83,17 +83,10 @@ void UpdateListViewContent(sim_view_t* sim);
 // Updates the queue status to display the current job queue and ready queue
 void UpdateQueueStatus(sim_view_t* sim);
 
-// Adds a process to the process list
-void AddProcess(sim_view_t* sim, int pid, int arrivalTime, int ioBurstTime, int cpuBurstTime, int originalCpuBurstTime,
-    int cpuNumber);
-
 // Updates information for the selected process in the info display
 void UpdateProcessInfo(sim_view_t* sim, int index);
 
 // Checks if all processes are terminated and calculates metrics if true
 bool AllProcessesTerminated(sim_view_t* sim);
-
-// Main function to run the GUI and manage the simulation
-void RunGUI(sim_view_t* sim);
 
 #endif

@@ -13,7 +13,9 @@
 
 #include "scheduler_model.h"
 #include "sim_view.h"
-
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 // Structure representing the OS controller
 typedef struct {
@@ -23,6 +25,8 @@ typedef struct {
 
 
 /* Public API - Short declaration */
+
+void OS_CTRL_Start(os_controller_t* controller);
 
 void OS_CTRL_ChangeAlgorithm(os_controller_t* controller);
 void OS_CTRL_AddProcess(os_controller_t* controller);

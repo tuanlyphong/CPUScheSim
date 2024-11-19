@@ -4,8 +4,9 @@
 
 int main()
 {
+    scheduler_model_t model;
     os_controller_t controller = {
-        .model = NULL,
+        .model = &model,
         .view  = { .progress          = 0.0f,
              .currentTime             = 0,
              .pidCounter              = 1,
@@ -38,8 +39,7 @@ int main()
              .processRunning          = false },
     };
 
-    // Call the RunGUI function and pass the reference to the sim_view_t instance
-    RunGUI(&controller.view);
+    OS_CTRL_Start(&controller);
 
     return 0;
 }
