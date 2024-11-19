@@ -25,7 +25,7 @@ else
 endif
 
 # Source and Object Files
-SRC_FILES := $(SRC_DIR)/main.c
+SRC_FILES := $(SRC_DIR)/main.c $(SRC_DIR)/src/sim_view.c
 OBJ_FILES := $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRC_FILES))
 
 include config.mk
@@ -44,6 +44,7 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 # Create Build Directories
 $(BUILD_DIR) $(BIN_DIR):
 	-$(MKDIR) "$@"
+	-$(MKDIR) "$@/src"
 
 # Clean Up Build Artifacts
 clean:
