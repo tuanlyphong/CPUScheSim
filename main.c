@@ -356,7 +356,7 @@ int main() {
             float progress = 1.0f - (float)processList[i].cpuBurstTime / processList[i].originalCpuBurstTime;
             GuiProgressBar((Rectangle){615 * scaleX, (90 + 33 * i) * scaleY, 100 * scaleX, 30 * scaleY}, NULL, NULL, &progress, 0.0f, 1.0f);
             char label[20];
-            sprintf(label, "P%d", i);  // Label with process index
+            sprintf(label, "P%d", i+1);  // Label with process index
             DrawText(label, 730 * scaleX, (95 + 33 * i) * scaleY, 20 * scaleX, DARKGRAY);
         }
         // Label for current process or CPU status
