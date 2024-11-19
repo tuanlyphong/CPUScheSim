@@ -1,0 +1,12 @@
+BasedOnStyle: Webkit
+SpaceAfterCStyleCast: true
+IndentWidth: 4
+ColumnLimit: 120
+MaxEmptyLinesToKeep: 20
+AllowShortFunctionsOnASingleLine: Empty
+AlignConsecutiveMacros: true
+AlignConsecutiveAssignments: true
+AlignConsecutiveDeclarations: true
+AlignEscapedNewlines: Right
+AlignOperands: true
+AlignTrailingComments: true
